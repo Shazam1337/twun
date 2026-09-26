@@ -1,0 +1,236 @@
+.odado { --surface:#fcfbf8; --subtle:#f3f0eb; --muted:#7c7670; --edge:#e9e5df; min-height:100vh; color:#2c2927; background:#f2eee8; font-size:14px; line-height:1.5; }
+.odado .mono { font-family:'DM Mono',monospace; font-style:normal; letter-spacing:-.035em; font-variant-numeric:tabular-nums; }
+.odado button { transition:background .15s,color .15s,box-shadow .15s; }
+.odado button:disabled { cursor:not-allowed; }
+.odado-header { height:80px; padding:0 32px; display:flex; align-items:center; gap:56px; background:var(--surface); border-bottom:1px solid var(--edge); }
+.odado-brand { display:flex; align-items:center; gap:11px; font-size:25px; font-weight:800; letter-spacing:-1.2px; }
+/* Display the supplied artwork without its transparent outer padding; keep the PNG untouched. */
+.odado-brand-image { position:relative; display:block; width:164px; height:34px; overflow:hidden; flex-shrink:0; }
+.odado-brand-image img { position:absolute; display:block; width:209px; max-width:none; height:auto; left:-22px; top:50%; transform:translateY(-50%); }
+.odado-mark { position:relative; display:block; width:29px; height:29px; }
+.odado-mark::before,.odado-mark::after { content:""; position:absolute; width:19px; height:24px; border:5px solid #2c2927; border-radius:10px; transform:rotate(-28deg); top:2px; left:1px; }
+.odado-mark::after { left:10px; }
+.odado-nav { display:flex; height:100%; align-items:center; gap:8px; }
+.odado-nav a { padding:10px 16px; border-radius:8px; font-weight:600; color:var(--muted); }
+.odado-nav a:hover,.odado-nav a[aria-current=page] { background:#ede9e3; color:#2c2927; }
+.odado-header-end { margin-left:auto; display:flex; align-items:center; gap:24px; }
+.odado-x-link { display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:40px; height:40px; border:1px solid var(--edge); border-radius:9px; color:var(--ink); margin-left:-14px; transition:background .15s; }
+.odado-x-link:hover { background:var(--subtle); }
+.odado-x-link:focus-visible { outline:2px solid var(--ink); outline-offset:3px; }
+@media(max-width:1230px) { .odado-x-link { margin-left:0; } }
+@media(max-width:760px) { .odado-x-link { margin-left:8px; } }
+.odado-demo-label { display:flex; align-items:center; gap:7px; font-size:12px; font-weight:600; color:#5c554d; border-radius:6px; padding:6px 9px; background:#f0eae0; }
+.odado-demo-label>span { width:5px; height:5px; background:#81715c; border-radius:50%; }
+.odado-network { color:#6c655e; font-size:13px; }
+.odado-header-end>.relative>button { border-radius:9px; height:40px; font-size:14px; font-weight:600; }
+.odado-header-end [role=dialog] { border:1px solid var(--edge); border-radius:14px; background:var(--surface); width:330px; }
+.odado-header-end [role=dialog] p { font-size:14px; }
+.odado-header-end [role=dialog]>button { border-radius:8px; border-color:var(--edge); }
+.odado-workspace { max-width:1680px; margin:0 auto; padding:24px 28px 12px; }
+.odado-layout { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:20px; align-items:start; }
+.odado-main-column,.odado-order-column { display:flex; flex-direction:column; gap:16px; min-width:0; }
+.odado-order-column { gap:12px; }
+.odado-panel { border-radius:14px; background:var(--surface); box-shadow:0 2px 4px #2c292703; }
+.odado-chart-panel { min-width:0; }
+.odado-market-heading { display:flex; align-items:center; gap:32px; padding:18px 24px 14px; }
+.odado-pair-picker { position:relative; flex-shrink:0; }
+.odado-pair-button { display:flex; align-items:center; gap:11px; text-align:left; }
+.odado-pair-icon { display:grid; place-items:center; width:42px; height:42px; border-radius:12px; background:#ece7e0; color:#544b43; }
+.odado-pair-name { display:block; font-size:19px; letter-spacing:-.65px; font-weight:800; }
+.odado-pair-subtitle { display:flex; gap:6px; font-size:12px; color:var(--muted); margin-top:2px; }
+.odado-pair-menu { position:absolute; top:58px; left:0; width:295px; z-index:20; padding:10px; border:1px solid var(--edge); border-radius:12px; background:var(--surface); box-shadow:0 12px 40px #2c292719; }
+.odado-pair-menu p { padding:6px 9px; font-size:12px; color:var(--muted); }
+.odado-pair-menu button { width:100%; display:flex; align-items:center; justify-content:space-between; background:var(--subtle); padding:12px; border-radius:8px; text-align:left; }
+.odado-pair-menu small { display:block; margin-top:4px; color:var(--muted); font-size:12px; }
+.odado-mini-label { font-size:12px; color:var(--muted); }
+.odado-index>div { display:flex; align-items:center; gap:12px; }
+.odado-ratio { font-size:30px; font-weight:500; line-height:1.3; }
+.odado-change { display:flex; flex-direction:column; font-size:13px; color:var(--muted); line-height:1.3; }
+.odado-change small { font-size:10px; color:var(--muted); }
+.odado .is-positive { color:#187852; }
+.odado .is-negative { color:#bd554b; }
+.odado-stock-prices { display:flex; gap:28px; margin-left:auto; }
+.odado-stock-prices p { color:#6f6861; font-size:13px; margin-bottom:3px; }
+.odado-stock-prices p span { font-size:10px; margin-left:7px; color:#958d85; }
+.odado-stock-prices .mono { font-size:16px; }
+.odado-chart-toolbar { display:flex; align-items:center; justify-content:space-between; padding:0 24px 8px; gap:12px; }
+.odado-chart-toolbar>span { display:flex; align-items:center; gap:8px; color:#69635c; font-size:13px; }
+.odado-chart-toolbar small { font-size:11px; color:#989088; margin-left:3px; }
+.odado-line-swatch { display:block; width:13px; height:2px; background:#777169; }
+.odado-periods { display:flex; gap:3px; background:var(--subtle); border-radius:8px; padding:3px; }
+.odado-periods button { min-width:37px; height:28px; font-size:12px; border-radius:6px; color:var(--muted); font-weight:600; }
+.odado-periods button[aria-pressed=true] { background:var(--surface); color:#2c2927; box-shadow:0 1px 4px #2c292710; }
+.odado-periods button:hover { color:#2c2927; }
+.odado-chart { height:420px; width:100%; padding:0 12px 0 4px; }
+.odado-chart-empty { height:420px; display:flex; flex-direction:column; gap:12px; align-items:center; justify-content:center; text-align:center; padding:32px; color:var(--muted); }
+.odado-chart-empty strong { font-weight:600; color:#4c453f; font-size:16px; }
+.odado-chart-empty p { max-width:340px; }
+.odado-chart-empty small { font-size:12px; }
+.odado-history-note { margin:0 24px; color:#756d65; font-size:12px; padding-bottom:10px; }
+.odado-chart-tooltip { min-width:230px; padding:15px 18px; border-radius:10px; background:#fcfbf8; border:1px solid #eee7dd; box-shadow:0 6px 24px #4a3d2e14; color:#5b4c3e; }
+.odado-chart-tooltip p { font-size:12px; color:#948574; margin-bottom:10px; }
+.odado-chart-tooltip>div { display:flex; gap:24px; align-items:center; justify-content:space-between; font-size:14px; }
+.odado-chart-tooltip strong { font-size:18px; font-weight:500; }
+.odado-chart-tooltip small { display:block; margin-top:8px; font-size:11px; color:#a29483; }
+.odado-sourcebar { min-height:40px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:6px 24px 10px; color:var(--muted); font-size:12px; }
+.odado-sourcebar>div { display:flex; gap:10px; align-items:center; }
+.odado-sourcebar button { padding:6px; border-radius:6px; }
+.odado-sourcebar button:hover { background:var(--subtle); }
+.odado-source { display:flex; gap:7px; align-items:center; }
+.odado-source-divider { color:#c5bdb4; margin:0 2px; }
+.odado-status-dot { height:5px; width:5px; border-radius:50%; background:#7d766d; }
+.odado-status-dot.is-muted { background:#b5a99c; }
+.odado-feed-alert { display:flex; gap:10px; margin:0 24px 10px; padding:8px 14px; border-radius:8px; background:#f4ebdd; color:#77603f; font-size:14px; }
+.odado-feed-alert svg { flex-shrink:0; margin-top:2px; }
+.odado-feed-alert strong { font-weight:600; }
+.odado-feed-alert p { margin-top:3px; font-size:12px; }
+.odado-archive-notice { display:flex; justify-content:space-between; align-items:center; gap:16px; background:#e9e3da; border-radius:9px; padding:12px 16px; font-size:13px; color:#6e6255; margin-bottom:16px; }
+.odado-archive-notice strong { color:#4f453a; margin-right:4px; }
+.odado-archive-notice button { flex-shrink:0; padding:4px; }
+.odado-order { padding:23px 22px 20px; }
+.odado-order-heading { display:flex; align-items:center; justify-content:space-between; gap:6px; margin-bottom:20px; }
+.odado-order-heading h2 { font-size:16px; font-weight:800; letter-spacing:-.4px; }
+.odado-order-heading>span { font-size:11px; color:var(--muted); background:var(--subtle); padding:4px 6px; border-radius:5px; }
+.odado-side-toggle { display:grid; grid-template-columns:1fr 1fr; gap:4px; padding:4px; border-radius:10px; background:#eeeae4; margin-bottom:23px; }
+.odado-side-toggle button { border-radius:7px; height:42px; font-size:15px; font-weight:700; color:#80776d; }
+.odado-side-toggle button span { margin-left:6px; }
+.odado-side-toggle .is-long { background:#dcece3; color:#24674b; box-shadow:0 1px 4px #2c292709; }
+.odado-side-toggle .is-short { background:#f3dedb; color:#a34d44; box-shadow:0 1px 4px #2c292709; }
+.odado-margin-head { display:flex; justify-content:space-between; align-items:baseline; gap:6px; margin-bottom:10px; }
+.odado-margin-head label { font-weight:600; }
+.odado-margin-head>span { font-size:11px; color:var(--muted); white-space:nowrap; }
+.odado-margin-head .mono { color:#625a52; font-size:12px; margin-left:3px; }
+.odado-margin-input { background:var(--subtle); display:flex; align-items:center; gap:10px; padding:15px 14px; border-radius:10px; box-shadow:inset 0 0 0 1px #e7e1d8; }
+.odado-margin-input:focus-within { box-shadow:inset 0 0 0 1px #9b8e7d; }
+.odado-margin-input input { font-size:30px; font-weight:500; background:none; width:100%; min-width:0; outline:none; line-height:1.3; }
+.odado-margin-input>div { display:flex; flex-direction:column; align-items:flex-end; gap:4px; }
+.odado-margin-input>div>span { font-size:13px; font-weight:600; }
+.odado-margin-input button { font-size:11px; color:var(--muted); }
+.odado-leverage { margin:22px 0 20px; }
+.odado-leverage>div:first-child { display:flex; justify-content:space-between; align-items:center; margin-bottom:13px; }
+.odado-leverage label { font-weight:600; }
+.odado-leverage>div>.mono { font-size:14px; padding:1px 8px; border-radius:5px; background:#eee9e2; }
+.odado-leverage>input { width:100%; height:4px; display:block; accent-color:#50483f; cursor:pointer; }
+.odado-leverage-steps { display:flex; justify-content:space-between; margin-top:11px; }
+.odado-leverage-steps button { font-size:11px; color:#91877d; border-radius:4px; padding:2px 6px; }
+.odado-leverage-steps button[aria-pressed=true] { background:var(--subtle); color:#4f463d; }
+.odado-notional { display:flex; align-items:center; justify-content:space-between; margin-bottom:17px; font-size:13px; }
+.odado-notional>span { color:var(--muted); }
+.odado-notional strong { font-weight:600; }
+.odado-notional strong>span:last-child { font-size:11px; font-weight:400; color:#7e756b; }
+.odado-submit { display:flex; align-items:center; justify-content:center; gap:10px; height:48px; width:100%; background:#302d29; color:#fcfbf8; border-radius:9px; font-size:14px; font-weight:700; }
+.odado-submit:hover:not(:disabled) { background:#181715; box-shadow:0 3px 10px #2c292718; }
+.odado-submit:disabled { opacity:.45; font-size:12px; }
+.odado-signature-note { display:flex; justify-content:center; align-items:center; gap:6px; color:#93887d; font-size:11px; margin-top:11px; }
+.odado-order-details { display:flex; flex-direction:column; gap:9px; font-size:12px; margin-top:23px; }
+.odado-order-details>div { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.odado-order-details dt { color:#81776e; }
+.odado-order-details dt>span { color:#a09589; font-size:10px; margin-left:3px; }
+.odado-order-details dd { text-align:right; font-size:12px; }
+.odado-order-details .odado-total { border-top:1px solid var(--edge); padding-top:12px; margin-top:3px; font-size:13px; }
+.odado-total dt { color:#4e443a; font-weight:600; }
+.odado-total dd { font-weight:500; }
+.odado-order-message { margin-top:12px; padding:10px; background:var(--subtle); border-radius:8px; font-size:13px; }
+.odado-disclosure { font-size:14px; }
+.odado-disclosure summary { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:16px 20px; cursor:pointer; font-weight:500; color:#635a50; list-style:none; }
+.odado-disclosure summary::-webkit-details-marker { display:none; }
+.odado-disclosure summary>span { display:flex; gap:9px; align-items:center; }
+.odado-disclosure[open] summary>svg:last-child { transform:rotate(180deg); }
+.odado-model-copy { padding:0 20px 20px; font-size:13px; color:#756b60; }
+.odado-model-copy p+p { margin-top:12px; }
+.odado-model-copy dl { margin:14px 0; font-size:12px; }
+.odado-model-copy dl>div { display:flex; justify-content:space-between; padding:4px 0; gap:10px; }
+.odado-model-copy dd { color:#544a40; text-align:right; }
+.odado-model-copy a { display:block; margin-top:16px; color:#453b31; text-decoration:underline; text-underline-offset:3px; }
+.odado-demo-controls section { border:0; padding:0 20px 20px; background:none; }
+.odado-demo-controls section>.flex { flex-direction:column; align-items:flex-start; gap:12px; }
+.odado-demo-controls section p { font-size:13px; color:#756b60; line-height:1.6; }
+.odado-demo-controls .eyebrow { font:600 14px Manrope,Arial,sans-serif; text-transform:none; letter-spacing:normal; color:#42382e; }
+.odado-demo-controls section button { border:0; border-radius:7px; background:#eee9e2; padding:10px 16px; font-size:13px; }
+.odado-activity { overflow:hidden; }
+.odado-activity-top { display:flex; justify-content:space-between; align-items:center; padding:0 22px; border-bottom:1px solid #f0ece6; }
+.odado-activity [role=tablist] { display:flex; gap:24px; }
+.odado-activity [role=tab] { display:flex; align-items:center; gap:8px; height:52px; font-size:14px; color:#978b7e; border-bottom:2px solid transparent; }
+.odado-activity [role=tab][aria-selected=true] { color:#3c332a; font-weight:700; border-color:#625548; }
+.odado-activity [role=tab]>span { display:inline-flex; align-items:center; justify-content:center; border-radius:5px; min-width:20px; height:20px; font-size:11px; background:#f0ebe5; color:#847668; }
+.odado-local-label { display:flex; gap:7px; align-items:center; color:#a09385; font-size:11px; }
+.odado-positions>.border-dashed,.odado-empty-history { border:0; text-align:center; padding:12px 16px 14px; }
+.odado-positions>.border-dashed p:first-child,.odado-empty-history p:first-child { font-size:14px; font-weight:600; color:#7c7063; }
+.odado-positions>.border-dashed p+p,.odado-empty-history p+p { font-size:12px; color:#a2978b; margin-top:5px; }
+.odado-activity .overflow-x-auto { border:0; }
+.odado-activity table { font-size:13px; }
+.odado-activity thead { background:#f7f4ef; font-size:12px; }
+.odado-activity tr { border-color:var(--edge); }
+.odado-activity td button { border:0; background:#ede7df; border-radius:6px; font-size:13px; }
+.odado-positions>p { padding:0 16px 14px; font-size:12px; }
+.odado-activity .eyebrow { font-family:inherit; text-transform:none; letter-spacing:normal; font-size:13px; }
+.odado-activity [role=dialog] { border-radius:14px; background:var(--surface); }
+.odado-activity [role=dialog] button { border-radius:8px; }
+.odado-footer { display:flex; justify-content:space-between; padding:15px 2px 0; font-size:11px; color:#a19588; }
+.odado-modal-backdrop { position:fixed; z-index:60; inset:0; background:#2c292766; backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; padding:24px; }
+.odado-modal { background:var(--surface); border-radius:18px; width:440px; max-width:100%; padding:28px; box-shadow:0 20px 100px #2c292733; }
+.odado-modal-top { display:flex; align-items:center; justify-content:space-between; gap:16px; font-size:13px; color:var(--muted); }
+.odado-modal h2 { font-size:24px; font-weight:800; letter-spacing:-.8px; margin:18px 0; }
+.odado-modal .odado-order-details { font-size:14px; }
+.odado-modal>p { font-size:13px; color:var(--muted); margin:22px 0; }
+.odado-modal .odado-submit { margin-top:20px; }
+.odado-cancel { width:100%; margin-top:8px; padding:10px; font-size:14px; color:var(--muted); }
+.odado-primary-link { display:inline-flex; align-items:center; gap:10px; padding:12px 20px; border-radius:9px; background:#302d29; color:#fcfbf8; font-size:14px; font-weight:600; transition:background .15s; }
+.odado-primary-link:hover { background:#181715; }
+.odado-kicker { color:var(--muted); font-size:13px; font-weight:500; }
+.odado-page-heading { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:12px 0 28px; }
+.odado-page-heading h1 { font-size:36px; line-height:1.2; font-weight:800; letter-spacing:-1.4px; margin:8px 0 12px; }
+.odado-page-heading>div>p:last-child { color:var(--muted); font-size:14px; }
+.odado-page-heading>button { background:var(--surface); border:0; border-radius:9px; height:42px; padding:0 16px; font-size:14px; font-weight:500; }
+.odado-portfolio-feed { padding-top:14px; margin-bottom:20px; }
+.odado-account-cards { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; margin-bottom:20px; }
+.odado-account-cards>section { padding:26px; }
+.odado-account-cards p { font-size:14px; color:var(--muted); }
+.odado-account-cards h2 { font-size:34px; font-weight:500; margin:18px 0 10px; }
+.odado-account-cards h2 small { font-family:Manrope,Arial,sans-serif; font-size:12px; color:var(--muted); font-weight:400; }
+.odado-account-cards section>span { font-size:13px; color:var(--muted); }
+.odado-account-cards section>span.is-positive { color:#187852; }
+.odado-account-cards section>span.is-negative { color:#bd554b; }
+.odado-account-metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); padding:24px 26px; gap:24px; margin-bottom:20px; }
+.odado-account-metrics p { color:var(--muted); font-size:13px; }
+.odado-account-metrics strong { display:inline-block; font-size:22px; font-weight:400; margin:10px 8px 0 0; }
+.odado-account-metrics div>span { color:var(--muted); font-size:11px; }
+.odado-portfolio>.odado-activity { margin-bottom:20px; }
+.odado-section-heading { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:16px 24px; border-bottom:1px solid var(--edge); }
+.odado-section-heading h2 { font-size:15px; font-weight:700; }
+.odado-section-heading h2>span { display:inline-block; font-size:11px; padding:1px 6px; margin-left:6px; border-radius:5px; background:var(--subtle); color:var(--muted); font-weight:400; }
+.odado-section-heading>a { font-size:13px; color:#6f6559; }
+.odado-section-heading>span { font-size:12px; color:var(--muted); }
+.odado-home { overflow:hidden; }
+.odado-home-hero { padding:48px max(28px,calc((100vw - 1200px)/2)) 56px; }
+.odado-home-hero .relative { border-radius:14px; border:0; }
+.odado-home>section:not(.odado-home-hero) { padding:48px max(28px,calc((100vw - 1200px)/2)); border:0; background:transparent; }
+.odado-home h2 { letter-spacing:-.045em; }
+.odado-home h3 { letter-spacing:-.035em; }
+.odado-home .eyebrow { font-family:Manrope,Arial,sans-serif; font-size:13px; letter-spacing:0; text-transform:none; color:var(--muted); }
+.odado-home p.text-xs { font-size:14px; line-height:1.65; opacity:1; color:#7c7670; }
+.odado-home .grid.gap-px { gap:16px; border:0; background:transparent; }
+.odado-home .grid.gap-px>a,.odado-home .grid.gap-px>div { border-radius:14px; background:var(--surface); padding:24px; min-height:200px; }
+.odado-home .grid.border-y { gap:16px; border:0; }
+.odado-home .grid.border-y>div { border:0; padding:24px; border-radius:14px; background:var(--surface); }
+.odado-home .grid.border-y>div p { max-width:none; }
+.odado-home section>div>div.border { border:0; border-radius:14px; background:var(--surface); }
+.odado-home section>div>div>div.border { border-radius:10px; border-color:var(--edge); }
+.odado-home details { border-color:var(--edge); margin:0 24px; }
+.odado-home summary { font-size:15px; font-weight:600; }
+.odado-home details p { font-size:14px; color:var(--muted); opacity:1; }
+.odado-home-preview { color:var(--ink); }
+.odado-home .odado-preview { border:0; padding:24px; border-radius:14px; background:var(--surface); box-shadow:none; }
+.odado-preview .border { border:0; border-radius:10px; background:var(--subtle); }
+.odado-preview .border>div.border { background:#eae5de; }
+.odado-preview .border-b { border-color:var(--edge); }
+.odado-preview p { font-size:14px; }
+.odado-home-footer { background:var(--surface); padding:36px max(28px,calc((100vw - 1200px)/2)); color:var(--ink); margin-top:24px; }
+.odado-home-footer p:last-child { font-size:13px; line-height:1.7; }
+.odado-home-footer a { font-size:14px; font-weight:500; }
+@media(max-width:900px) { .odado-account-cards { gap:12px; } .odado-account-cards>section { padding:20px; } .odado-account-cards h2 { font-size:25px; } .odado-account-metrics { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:600px) { .odado-page-heading { align-items:flex-start; flex-direction:column; } .odado-account-cards { grid-template-columns:1fr; } .odado-page-heading h1 { font-size:30px; } .odado-section-heading>span { display:none; } .odado-home-hero { padding:32px 20px; } .odado-home>section:not(.odado-home-hero) { padding:32px 20px; } }
+@media(min-width:1500px) { .odado-market-heading { gap:45px; } }
+@media(max-width:1230px) { .odado-header { gap:24px; padding:0 24px; } .odado-header-end { gap:14px; } .odado-network { display:none; } .odado-market-heading { flex-wrap:wrap; gap:16px; } .odado-stock-prices { gap:18px; } .odado-stock-prices p span { display:none; } .odado-pair-icon { display:none; } .odado-index { margin-left:auto; } .odado-layout { grid-template-columns:minmax(0,1fr) 320px; gap:16px; } .odado-workspace { padding:20px; } }
+@media(max-width:1000px) { .odado-demo-label { display:none; } .odado-stock-prices { width:100%; margin:0; } .odado-stock-prices>div { display:flex; align-items:center; gap:10px; } .odado-stock-prices p { margin:0; } .odado-sourcebar { flex-wrap:wrap; } .odado-local-label { display:none; } }
+@media(max-width:760px) { .odado-header { height:auto; min-height:72px; flex-wrap:wrap; gap:12px; padding:16px; } .odado-brand { font-size:22px; } .odado-nav { order:3; width:100%; } .odado-nav a { padding:8px 12px; } .odado-header-end { gap:0; } .odado-layout { grid-template-columns:1fr; } .odado-workspace { padding:16px 12px; } .odado-market-heading { padding:20px 18px; } .odado-pair-name { font-size:17px; } .odado-ratio { font-size:26px; } .odado-chart-toolbar { flex-wrap:wrap; padding:0 18px 10px; } .odado-stock-prices { justify-content:space-between; } .odado-sourcebar { padding:10px 18px; } .odado-footer { gap:20px; } }
