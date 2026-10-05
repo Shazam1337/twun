@@ -74,11 +74,8 @@ const LIVE = 'pair-perps-twelve-v3';
     await page.screenshot({ path: path.join(output, 'odado-trade-1440x900.png'), fullPage: false, animations: 'disabled' });
     check('ODADO at 1440×900: 420px chart, 340px order form, real-data tooltip, period/pair selectors, activity tabs, collapsed demo controls');
     await page.getByRole('button', { name: 'Connect wallet', exact: true }).click();
-    const dialog = page.getByRole('dialog', { name: 'Connect a Solana wallet' });
-    for (const name of ['Phantom', 'Solflare']) {
-      await dialog.getByRole('button', { name, exact: true }).click();
-      await dialog.getByRole('status').filter({ hasText: name + ' extension was not detected' }).waitFor();
-    }
+    const dialog = page.getByRole('dialog', { name: 'Connect an EVM wallet' });
+    await dialog.getByRole('status').filter({ hasText: 'No EVM wallet detected' }).waitFor();
     await dialog.getByRole('button', { name: 'Close wallet menu' }).click();
     await page.getByRole('link', { name: 'Portfolio', exact: true }).click();
     await page.getByRole('heading', { name: 'Your ratio positions.' }).waitFor();
@@ -90,7 +87,7 @@ const LIVE = 'pair-perps-twelve-v3';
     await capture(page, 'market-portfolio');
     await page.screenshot({ path: path.join(output, 'odado-portfolio-1440x900.png'), animations: 'disabled' });
     check('Identical persistent Odado header on all three pages; active navigation, metadata and no old brand in visible text');
-    check('Actual landing, terminal, portfolio at 1440px; Phantom/Solflare absent-extension UI');
+    check('Actual landing, terminal, portfolio at 1440px; EVM wallet absent-extension UI');
     await real.close();
 
     // Isolated TEST-ONLY route fixtures exercise recovery and accounting without provider access.
@@ -161,7 +158,7 @@ const LIVE = 'pair-perps-twelve-v3';
     assert.equal(await page.evaluate(() => localStorage.getItem('pair-perps-demo-v2-archive')), legacy);
     assert.deepEqual(posts, []); assert.deepEqual(errors, []);
     check('No execution POSTs or uncaught browser errors; reset preserves archives; no actual wallet approval tested');
-    await fs.writeFile(path.join(output, 'market-browser-results.json'), JSON.stringify({ actualApiStatus: actual.status, actualProviderVerified: actual.status === 'ready' && Boolean(actual.snapshot), fixtureTestsOnly: true, width: 1440, checks, errors, posts, wallet: 'Phantom/Solflare absent; real connection not verified.' }, null, 2));
+    await fs.writeFile(path.join(output, 'market-browser-results.json'), JSON.stringify({ actualApiStatus: actual.status, actualProviderVerified: actual.status === 'ready' && Boolean(actual.snapshot), fixtureTestsOnly: true, width: 1440, checks, errors, posts, wallet: 'EVM wallet absent; real connection not verified.' }, null, 2));
     await context.close();
   } catch (error) {
     await page?.screenshot({ path: path.join(output, 'market-test-failure.png'), fullPage: true }).catch(() => {});

@@ -67,7 +67,7 @@ pair-perps-demo-v2-archive. The old pair-demo-state-v1 spot account is also unto
 No synthetic position, balance or mark is migrated. Reset affects only v4.
 Each position stores its oriented pair, its own accepted mark, dataSource, entryIndexTime (oldest of the two source timestamps), and entryIndexId.
 Prices come from the server; execution, funding, collateral and liquidation remain local simulations.
-Phantom/Solflare connections remain independent. No signatures, transactions, real oracle, venue,
+EVM wallet connections remain independent. No signatures, transactions, real oracle, venue,
 matching engine, or liquidation keeper are integrated. Browser storage is not secure collateral accounting.
 
 ## Feed and index semantics

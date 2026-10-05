@@ -3,7 +3,7 @@
 A curated product catalog of 50 large US stocks across 11 sectors, not an exact market-cap ranking.
 Choose any two different stocks. All pair markets are synthetic TWUN markets, not externally listed
 perpetual contracts. No stock ownership or tokenization. Execution, collateral, funding and liquidation
-remain local simulation; Phantom/Solflare connections are real and independent.
+remain local simulation; EVM wallet connections are real and independent.
 
 ## Run locally — one Node process
 
@@ -145,6 +145,21 @@ before external distribution. No plan was bought; nothing was published.
 
 Real execution, on-chain collateral/oracle/contract, keepers, live funding, corporate-action-neutral
 index and production security remain out of scope. Jupiter spot routes are not a perps engine.
+## Robinhood Chain wallet connection
+
+The wallet target is Robinhood Chain mainnet (4663 / 0x1237), not Ethereum mainnet
+and not a Robinhood brokerage account. Configuration comes from
+[Robinhood documentation](https://docs.robinhood.com/chain/add-network-to-wallet/).
+Browser wallets are discovered via EIP-6963 with an EIP-1193 legacy fallback.
+MetaMask, Rabby and other installed EVM providers appear when detected. Address access
+requires an explicit Connect click; there is no auto-connect or signing request.
+Network switching/adding is a separate user action. Account, network and disconnect
+events update the UI. Disconnect is local; revoke permissions inside the extension.
+No WalletConnect mobile QR integration is included; Robinhood Wallet mobile users need
+an injected EVM browser provider. A setup link is provided, not a fake desktop connector.
+Demo storage keys, positions, fees and Twelve Data remain unchanged and wallet-independent.
+No live execution, tokens, deposits, contract deployment or on-chain transactions were added.
+
 ## Homepage stock tape
 
 `/api/ticker` reads the same server cache for all 50 catalog stocks; it never requests
