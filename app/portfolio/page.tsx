@@ -24,6 +24,6 @@ export default function PortfolioPage() {
     <section className="odado-panel odado-activity"><div className="odado-section-heading"><h2>Positions <span>{state.positions.length}</span></h2><Link href="/trade">Open terminal ↗</Link></div><PerpsPositions compact/></section>
     <section className="odado-panel odado-activity"><div className="odado-section-heading"><h2>History <span>{state.history.length}</span></h2><span>Demo account · Saved locally</span></div><TradeHistory compact/></section>
     <OdadoModel/>
-    <footer className="odado-footer"><span>Reset affects only this real-data demo account.</span><span>Odado · No signatures or transactions</span></footer>
+    <footer className="odado-footer"><span>Reset affects only this real-data demo account.</span><span>TWUN · No signatures or transactions</span></footer>
   </main>;
 }

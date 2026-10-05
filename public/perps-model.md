@@ -1,6 +1,6 @@
-# Odado linear ratio perpetual — multi-market real-data demo model v4
+# TWUN linear ratio perpetual — multi-market real-data demo model v4
 
-Each pair is one synthetic cash-settled Odado contract. R = first stock USD price / second stock USD price.
+Each pair is one synthetic cash-settled TWUN contract. R = first stock USD price / second stock USD price.
 Choose any two different stocks from a curated 50-stock, 11-sector catalog; not an exact cap ranking.
 The 1,225 unordered combinations are computed indices, not existing exchange markets or liquidity claims.
 Inverse orientations share one catalog entry but have distinct position identities and payoff paths.
@@ -154,7 +154,7 @@ network I/O, including failed attempts and retries. Quote/time_series/logo each 
 Default hard application budgets: 8/minute, 750/UTC day (below Basic 800/day).
 A full 390-minute session is about 390 quote credits + 26 intraday-history credits + a few daily/
 closure credits, before retries. Actual entitlement and other API consumers can reduce headroom.
-Use a dedicated key, or lower budgets/increase the poll interval for the share allocated to Odado.
+Use a dedicated key, or lower budgets/increase the poll interval for the share allocated to TWUN.
 Account quotas cannot be inferred without a configured key. Users share symbol caches; different new symbol demands still consume credits.
 Four stocks polled for a full session cost about 780 quote credits before histories: Basic cannot
 sustain a large concurrent portfolio at 120s. Quota-limited pairs pause rather than use invented data.

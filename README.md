@@ -1,7 +1,7 @@
-# Odado — stock-performance ratio demo
+# TWUN — stock-performance ratio demo
 
 A curated product catalog of 50 large US stocks across 11 sectors, not an exact market-cap ranking.
-Choose any two different stocks. All pair markets are synthetic Odado markets, not externally listed
+Choose any two different stocks. All pair markets are synthetic TWUN markets, not externally listed
 perpetual contracts. No stock ownership or tokenization. Execution, collateral, funding and liquidation
 remain local simulation; Phantom/Solflare connections are real and independent.
 
@@ -145,6 +145,23 @@ before external distribution. No plan was bought; nothing was published.
 
 Real execution, on-chain collateral/oracle/contract, keepers, live funding, corporate-action-neutral
 index and production security remain out of scope. Jupiter spot routes are not a perps engine.
+## Homepage stock tape
+
+`/api/ticker` reads the same server cache for all 50 catalog stocks; it never requests
+additional provider data or changes trading marks. The homepage polls this local endpoint
+every 30 seconds. Symbols update when the existing selected-pair/open-position workflow
+refreshes them, not via an all-catalog subscription. Old prices have visible Cached timestamps;
+provider failures retain a dated price with Update unavailable. Missing prices/history show —.
+The 24h percentage is `(quote / historical close - 1) * 100`, relative to the displayed
+quote's timestamp, not necessarily the current wall clock. The reference is the completed
+unadjusted 5-minute close at or immediately before quote time minus 24 hours (less than
+5 minutes tolerance). No interpolation, weekend carry-forward or daily-change substitution.
+Twelve Data `/quote` change refers to the previous bar and is intentionally not labeled 24h.
+See [official documentation](https://twelvedata.com/docs). Existing feed-display rights apply.
+The tape loops continuously, including hover/focus; reduced-motion slows its speed.
+Clicking a stock opens Trade with that stock / TSLA; TSLA itself opens TSLA / NVDA.
+This only selects the market, never opens a position or requests a wallet signature.
+
 ## Closed-session local demo rule
 
 The UI shows “Market closed · Demo trading at last available prices” with source timestamps.

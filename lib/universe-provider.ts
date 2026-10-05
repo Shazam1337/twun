@@ -4,6 +4,7 @@ import { marketSession, nyTime } from "./market-calendar";
 import { emptyProviderDisk, ProviderDisk, TwelveProvider } from "./twelve-provider";
 import { FeedError, normalizeStockHistory, normalizeStockQuote, providerError } from "./twelve-normalize";
 import { Bundle, joinHistory, pairFeed, UniverseCache } from "./universe-feed";
+import { stockTicker } from "./stock-ticker";
 export type UniverseDisk = ProviderDisk & { universe?: UniverseCache };
 export class UniverseProvider {
   private cache: UniverseCache;
@@ -93,6 +94,7 @@ export class UniverseProvider {
     return {market,quotes:this.options.key?this.cache.quotes:{},catalog:this.cache.catalog,budget:this.transport.budget(),serverTime:now};
   });}
   catalog():CatalogStatus { return this.cache.catalog; }
+  ticker() { return stockTicker(this.cache,this.now(),!!this.options.key); }
   verify(symbol:string) {return this.serial(async()=>{
     if(!this.options.key)return {status:"not_configured",catalog:this.cache.catalog,budget:this.transport.budget()};
     const needs=(a:{status:string;checkedAt:number}|undefined)=>!a?.checkedAt||["quota_exhausted","unavailable"].includes(a.status);
