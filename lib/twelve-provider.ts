@@ -9,7 +9,7 @@ export type ProviderDisk = {
   histories: MarketFeed["histories"]; historyNext: Record<"5min" | "1day", number>;
 };
 export const emptyProviderDisk = (): ProviderDisk => ({ day: "", used: 0, minute: 0, minuteUsed: 0, blockedUntil: 0, failures: 0, quoteNext: 0, closedRefresh: "", snapshot: null, quoteStatus: "unavailable", histories: { "5min": null, "1day": null }, historyNext: { "5min": 0, "1day": 0 } });
-type Options = { key: string; now?: () => number; fetcher?: typeof fetch; disk?: ProviderDisk; persist?: (s: ProviderDisk) => void; dayBudget?: number; minuteBudget?: number; quoteMs?: number; timeoutMs?: number };
+type Options = { key: string; now?: () => number; fetcher?: typeof fetch; disk?: ProviderDisk; persist?: (s: ProviderDisk) => void | Promise<void>; dayBudget?: number; minuteBudget?: number; quoteMs?: number; timeoutMs?: number };
 
 export class TwelveProvider {
   private disk: ProviderDisk;
@@ -18,23 +18,23 @@ export class TwelveProvider {
   private fetcher: typeof fetch;
   private fatal = false;
   constructor(private options: Options) { this.disk = options.disk ?? emptyProviderDisk(); this.now = options.now ?? Date.now; this.fetcher = options.fetcher ?? fetch; }
-  private save() { try { this.options.persist?.(this.disk); } catch { this.fatal = true; throw new FeedError("unavailable"); } }
-  private reserve(cost = 2) {
+  private async save() { try { await this.options.persist?.(this.disk); } catch { this.fatal = true; throw new FeedError("unavailable"); } }
+  private async reserve(cost = 2) {
     if (this.fatal) throw new FeedError("unavailable");
     const now = this.now(), day = new Date(now).toISOString().slice(0, 10), minute = Math.floor(now / 60_000);
     if (day !== this.disk.day) { this.disk.day = day; this.disk.used = 0; }
     if (minute !== this.disk.minute) { this.disk.minute = minute; this.disk.minuteUsed = 0; }
     const dailyLimit = this.options.dayBudget ?? 750, minuteLimit = this.options.minuteBudget ?? 8;
     if (this.disk.used + cost > dailyLimit) {
-      this.disk.blockedUntil = Date.parse(`${day}T00:00:00Z`) + 86400000; this.save(); throw new FeedError("quota_exhausted");
+      this.disk.blockedUntil = Date.parse(`${day}T00:00:00Z`) + 86400000; await this.save(); throw new FeedError("quota_exhausted");
     }
-    if (this.disk.minuteUsed + cost > minuteLimit) { this.disk.blockedUntil = (minute + 1) * 60_000; this.save(); throw new FeedError("quota_exhausted"); }
+    if (this.disk.minuteUsed + cost > minuteLimit) { this.disk.blockedUntil = (minute + 1) * 60_000; await this.save(); throw new FeedError("quota_exhausted"); }
     if (now < this.disk.blockedUntil) throw new FeedError("quota_exhausted");
     // One credit per symbol. Persist BEFORE dispatch, including failed attempts/retries.
-    this.disk.used += cost; this.disk.minuteUsed += cost; this.save();
+    this.disk.used += cost; this.disk.minuteUsed += cost; await this.save();
   }
   private async request(endpoint: "quote" | "time_series" | "logo", params: Record<string, string>, symbols = ["NVDA", "TSLA"]) {
-    this.reserve(symbols.length);
+    await this.reserve(symbols.length);
     const url = new URL(`https://api.twelvedata.com/${endpoint}`);
     for (const [k, v] of Object.entries({ symbol: symbols.join(","), exchange: "NASDAQ", country: "United States", timezone: "UTC", prepost: "false", format: "JSON", ...params })) url.searchParams.set(k, v);
     const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), this.options.timeoutMs ?? 8000);
@@ -57,9 +57,9 @@ export class TwelveProvider {
   }
   async requestSymbols(endpoint: "quote" | "time_series" | "logo", symbols: string[], params: Record<string, string>) {
     try { return await this.request(endpoint, params, symbols); }
-    catch (error) { const status = this.failure(error); this.save(); throw new FeedError(status); }
+    catch (error) { const status = this.failure(error); await this.save(); throw new FeedError(status); }
   }
-  recordQuotaFailure(error: unknown) { this.failure(error); this.save(); }
+  async recordQuotaFailure(error: unknown) { this.failure(error); await this.save(); }
   budget() { return { used: this.disk.used, limit: this.options.dayBudget ?? 750, minuteUsed: this.disk.minute === Math.floor(this.now()/60000) ? this.disk.minuteUsed : 0, minuteLimit: this.options.minuteBudget ?? 8, retryAt: this.disk.blockedUntil, day: this.disk.day }; }
   private failure(error: unknown) {
     const failure = error instanceof FeedError ? error : new FeedError("partial");
@@ -103,7 +103,7 @@ export class TwelveProvider {
           if (session.state !== "open") this.disk.closedRefresh = closedKey;
         }
       } catch (error) { this.disk.quoteStatus = this.failure(error); }
-      try { this.save(); } catch { this.disk.quoteStatus = "unavailable"; }
+      try { await this.save(); } catch { this.disk.quoteStatus = "unavailable"; }
     }
     // Quotes take priority. A failed pair stops historical work as well.
     if (this.disk.quoteStatus !== "ready") return this.output();
@@ -122,7 +122,7 @@ export class TwelveProvider {
         this.disk.histories[interval] = previous ? { ...previous, status } : { interval, points: [], fetchedAt: 0, unmatched: 0, status } satisfies History;
         this.disk.historyNext[interval] = this.now() + 120_000;
       }
-      try { this.save(); } catch { this.disk.quoteStatus = "unavailable"; }
+      try { await this.save(); } catch { this.disk.quoteStatus = "unavailable"; }
     }
     return this.output();
   }

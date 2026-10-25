@@ -1,9 +1,43 @@
 # TWUN — stock-performance ratio demo
 
+## Analytics
+
+`/analytics`: interactive company-capitalization map/table, news attention, two-stock daily performance and historical risk. Reuses `TWELVE_DATA_API_KEY` for daily history and `FINNHUB_API_KEY` for profiles/news. Company profiles share the **same** `NEWS_API_MINUTE_BUDGET` / `NEWS_API_DAILY_BUDGET` and Redis journal with news; no extra quota pool. Coverage fills gradually (prioritized batches of up to 3, up to 8/minute at the default shared limit, 24h cache). No new service is required. [Methodology and limitations](public/analytics-model.md).
+
 A curated product catalog of 50 large US stocks across 11 sectors, not an exact market-cap ranking.
 Choose any two different stocks. All pair markets are synthetic TWUN markets, not externally listed
 perpetual contracts. No stock ownership or tokenization. Execution, collateral, funding and liquidation
 remain local simulation; EVM wallet connections are real and independent.
+
+## Public contract badge
+
+Set `NEXT_PUBLIC_TWUN_CONTRACT_ADDRESS` to the full Robinhood Chain EVM contract address
+in `.env.local` (or Vercel environment variables), then rebuild. This is an intentionally
+public address, never a private key or API secret. Until configured, the header shows
+the user-requested placeholder `CA: 0x000...000`; hovering shows `Click to copy`
+and clicking copies that exact text, not an invented complete address.
+Configured addresses are shortened to `0x1234…abcd`;
+click copies the complete address. Validation checks syntax only, not deployment or ownership.
+The compact network icon is the unmodified official monochrome Robinhood Chain feather,
+served locally to avoid sending visitors' browser requests to an external image host.
+
+## Market and company news
+Stock-tape catalog rotation, freshness rules and the shared API allowance are documented
+in [docs/ticker-refresh.md](docs/ticker-refresh.md). Old percentages are not displayed as
+current 24h changes. `TWELVE_DATA_TICKER_DAILY_BUDGET=180` is included in the global daily
+budget; set 0 to disable upstream catalog rotation.
+
+
+The News page and terminal pair feeds use a separate Finnhub adapter and shared cache.
+Configure `FINNHUB_API_KEY` on the server; setup, limits and provider rights are in
+[docs/news-setup.md](docs/news-setup.md). No key means an explicit disconnected feed.
+
+## Vercel deployment
+
+Use the shared Upstash Redis REST backend for all Vercel Functions. This keeps quote
+cache, refresh ownership and minute/day quota in one place across instances. Twelve
+Data remains the price provider. Setup and environment variables:
+[docs/vercel-setup.md](docs/vercel-setup.md).
 
 ## Run locally — one Node process
 
@@ -38,8 +72,15 @@ the selected pair/interval. No enumeration or polling of the 1,225 unordered com
 Quotes refresh no faster than 120 seconds during the regular session. Browser checks every 15s are
 cache checks, NOT ticks. Off-session cached values show Market closed; initial/expired checks use
 a 6-hour TTL, shortened to the next regular opening when appropriate. At opening, pre-session
-cached observations must refresh. Quotes have priority over history. 5min history: 1000 bars,
-30min TTL; 1day history: 400 bars, 6h TTL. Reverse pairs reuse the same underlying series.
+cached observations must refresh. Quotes have priority over history. Terminal 1min history: 5000 bars;
+5/15/30/60min selectable shared TTL (default 5min); 1day history: 400 bars, 6h TTL.
+Reverse pairs reuse the same underlying series. Interactive chart, candle sampling,
+limitations and attribution: [public/chart-model.md](public/chart-model.md).
+
+The main chart uses candle resolutions without a lookback cutoff. Drag toward the left
+edge (or Load earlier history) to request previous matched 1m observations through
+`/api/history`. Historical pages share the same Twelve Data quota and symbol cache;
+access/quota failures do not fabricate candles or revalue positions.
 
 Each /quote, /time_series or /logo symbol costs one API credit, including failed requests and retries.
 Default hard budgets are 8/minute and 750/UTC day, below Basic's 800/day. One two-stock pair needs
@@ -52,10 +93,11 @@ or allocate a smaller share of the budget. No plan is purchased automatically.
 
 Requests are serialized/deduplicated against a shared symbol cache. Timeout: 8s per provider call.
 429 uses shared exponential/Retry-After backoff; no unbudgeted immediate retries.
-Durable cache/quota journal: .cache/pair-twelve-data-v1.json, ignored by git, contains no secrets.
-Counters are persisted BEFORE dispatch. Never delete it to reset daily consumption.
-One Node process on durable disk ONLY; no serverless/replicas/PM2 cluster. Distributed cache,
-locks and atomic quota accounting are required before scaling to multiple instances.
+On Vercel, cache and quota journal live in Upstash Redis. Lua leases serialize refreshes
+across functions; every upstream call awaits a quota commit. If Redis fails, requests
+stop rather than fall back to per-instance quotas. Other functions serve committed cache.
+Local development without Redis still uses .cache/pair-twelve-data-v1.json with one Node
+process. Counters persist BEFORE dispatch; never clear either journal to reset consumption.
 
 ## Catalog availability audit
 
@@ -75,7 +117,7 @@ It reuses the SAME quota journal. Do not run it alongside the app. It checks /qu
 /time_series and /logo for each stock, with no fabricated response data. Results are written
 to artifacts/catalog-availability.json. Provider restrictions remain explicit.
 GET /api/catalog is a read-only cached report. The local verification endpoint also supports
-?verify=SYMBOL, shares quotas, and must not be exposed as a public unauthenticated service.
+?verify=SYMBOL and shares quotas. Verification is disabled on Vercel/shared Redis deployments.
 Logos use validated HTTPS URLs returned by Twelve Data; missing logos fall back to ticker initials.
 
 ## Pair model and storage
@@ -162,11 +204,14 @@ No live execution, tokens, deposits, contract deployment or on-chain transaction
 
 ## Homepage stock tape
 
-`/api/ticker` reads the same server cache for all 50 catalog stocks; it never requests
-additional provider data or changes trading marks. The homepage polls this local endpoint
-every 30 seconds. Symbols update when the existing selected-pair/open-position workflow
-refreshes them, not via an all-catalog subscription. Old prices have visible Cached timestamps;
-provider failures retain a dated price with Update unavailable. Missing prices/history show —.
+`/api/ticker` rotates all 50 catalog stocks through the SAME server cache and quota journal,
+without directly changing trading marks. The homepage checks this endpoint every 30 seconds.
+Oldest eligible quotes refresh first, up to two symbols per UTC minute, with a separate
+180-credit daily cap INCLUDED in the global budget. Trading keeps four of eight minute
+credits in reserve. Shared leases deduplicate viewers and serverless instances.
+See [rotation and quota details](docs/ticker-refresh.md). Old prices have explicit Stale quote
+timestamps and NO current percentage; provider failures retain a dated price with Update
+unavailable. Missing prices/history show —. First coverage is gradual, not instant or ticking.
 The 24h percentage is `(quote / historical close - 1) * 100`, relative to the displayed
 quote's timestamp, not necessarily the current wall clock. The reference is the completed
 unadjusted 5-minute close at or immediately before quote time minus 24 hours (less than
@@ -187,3 +232,7 @@ Funding is paused outside the regular session: Advance 8h is disabled and reject
 no wall-clock accrual and no overnight catch-up. At reopening, old snapshots are rejected until
 both quotes are fresh and synchronized. The recovered ratio updates PnL and checks liquidation
 atomically, including liquidation at a gap price. This does not imply real after-hours liquidity.
+# Feedback
+
+New **Feedback** tab: bug reports, ideas and UX/data feedback, stored on the server with private team access. Local storage works immediately; Vercel requires shared Redis. See [setup, privacy and inbox access](docs/feedback.md). Set server-only `FEEDBACK_ADMIN_TOKEN` (32+ random characters) to read tickets.
+

@@ -11,7 +11,7 @@ export const FUNDING_INTERVAL = 8 * 60 * 60 * 1000;
 export const EPOCH = Date.UTC(2026, 8, 24, 16);
 export type Side = "Long" | "Short";
 export type Position = { pair?: Pair; mark?: number; id: string; side: Side; margin: number; leverage: number; notional: number; entryRatio: number; entryFee: number; funding: number; openedAt: number; lastFundingAt: number; dataSource?: string; entryIndexTime?: number; entryIndexId?: string };
-export type Activity = { pair?: Pair; id: string; positionId: string; kind: "Open" | "Funding" | "Close" | "Liquidation"; side: Side; time: number; ratio: number; notional: number; pnl: number; fee: number; funding: number; payout: number; net: number; shortfall: number; dataSource?: string; indexTime?: number; entryIndexTime?: number };
+export type Activity = { pair?: Pair; id: string; positionId: string; kind: "Open" | "Funding" | "Close" | "Liquidation"; side: Side; time: number; ratio: number; notional: number; pnl: number; fee: number; funding: number; payout: number; net: number; shortfall: number; dataSource?: string; indexTime?: number; entryIndexTime?: number;closedFraction?:number;settledFunding?:number };
 export type Mark = { timestamp: number; value: number };
 export type PerpsState = { version: 2 | 3 | 4; freeUsdc: number; mark: number; clock: number; startedAt: number; positions: Position[]; history: Activity[]; marks: Mark[]; acceptedIndex?: { id: string; timestamp: number; source: string } };
 export type Result = { ok: true; state: PerpsState; message: string } | { ok: false; error: string };
@@ -70,9 +70,15 @@ function liquidate(s: PerpsState): PerpsState {
   return next;
 }
 
-export function closePosition(s: PerpsState, id: string): Result {
+export function closePosition(s: PerpsState, id: string,fraction=1): Result {
+  if(!Number.isFinite(fraction)||fraction<=0||fraction>1)return {ok:false,error:"Choose a closing fraction greater than 0 and at most 100%."};
   const p = s.positions.find(item => item.id === id);
   if (!p) return { ok: false, error: "This position is already closed." };
+  if(fraction<1&&equity(p,s.mark)>maintenance(p)+1e-9){
+    const portion={...p,margin:p.margin*fraction,notional:p.notional*fraction,entryFee:p.entryFee*fraction,funding:p.funding*fraction};
+    const settled=settle(s,portion,"Close"),remaining={...p,margin:p.margin*(1-fraction),notional:p.notional*(1-fraction),entryFee:p.entryFee*(1-fraction),funding:p.funding*(1-fraction)};
+    return {ok:true,message:`Closed ${fraction*100}% of the remaining position.`,state:{...settled,positions:s.positions.map(item=>item.id===id?remaining:item),history:[{...settled.history[0],closedFraction:fraction,settledFunding:portion.funding},...settled.history.slice(1)]}};
+  }
   return { ok: true, message: "Position closed. Remaining margin and PnL settled to free demo USDC.", state: settle(s, p, equity(p, s.mark) <= maintenance(p) + 1e-9 ? "Liquidation" : "Close") };
 }
 

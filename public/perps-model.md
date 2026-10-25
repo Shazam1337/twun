@@ -1,5 +1,9 @@
 # TWUN linear ratio perpetual — multi-market real-data demo model v4
 
+Interactive chart controls and sampled ratio-candle methodology are documented in
+[chart-model.md](/chart-model.md). Sampled candle OHLC is NOT tick-level OHLC and does
+not change any position accounting or index acceptance rules below.
+
 Each pair is one synthetic cash-settled TWUN contract. R = first stock USD price / second stock USD price.
 Choose any two different stocks from a curated 50-stock, 11-sector catalog; not an exact cap ranking.
 The 1,225 unordered combinations are computed indices, not existing exchange markets or liquidity claims.
@@ -21,6 +25,22 @@ Isolated equity E = M + PnL − F. Entry fee is already deducted from free balan
 On closing, payout = max(0, E − closing fee) is credited to free USDC.
 Net realized result = payout − M − entry fee. This includes funding and both fees.
 Account equity = free USDC + sum of open isolated equities. Open PnL is not spendable free balance.
+
+## Partial demo closing
+
+The close dialog supports 25%, 50% and 100% of the REMAINING position. For fraction f,
+allocated margin, fixed entry notional, entry-fee basis and accumulated signed funding
+all equal f times their current remaining values. Settlement uses the existing PnL,
+closing fee and zero-floor payout equations on that portion. Free balance increases
+only by its payout. The remainder retains its ID, entry ratio, leverage, source/time,
+opening time and last funding time; its margin, notional, entry-fee basis and funding
+are multiplied by (1-f). No new opening fee or retroactive funding is charged.
+The liquidation ratio is unchanged immediately after proportional reduction. A position
+already at maintenance breach must fully liquidate; it cannot escape via partial close.
+History uses kind Close with optional closedFraction and settledFunding metadata;
+funding cash-flow events stay recorded only once. Existing v4 storage and old positions
+remain compatible. Repeated partials followed by full close at one mark have the same
+total net result as one full close, up to floating point precision. UI rounds only display.
 
 ## Maintenance and liquidation
 
@@ -110,7 +130,9 @@ including gap liquidation at the recovered mark. A feed pause does NOT imply eco
 ## Historical close-ratio series and split policy
 
 /time_series is cached independently per stock and loaded on demand with identical intervals and adjust=none, prepost=false.
-5min (1000 bars) serves 1D/7D; 1day (400 bars) serves 30D/90D/1Y.
+The terminal uses 1min (5000 bars) for sampled 15m / 1h / 1D ratio candles, with older pages on demand.
+Legacy 5min (1000 bars) remains separately cached for the stock ticker and catalog checks;
+1day (400 bars) remains available to other consumers. Neither is mixed into minute candles.
 Both series use UNADJUSTED prices. Current /quote prices are current nominal share prices; quote
 has no adjust parameter. Explicit adjust=none overrides the daily history's default split adjustment
 and agrees with unadjusted intraday prices. No dividend adjustment is applied.
@@ -148,7 +170,7 @@ an expired 6h cache may fetch latest regular-session values. Pre-session cache i
 An unchanged last ratio does not move PnL. A changed validated real ratio revalues positions;
 reopening gaps can trigger liquidation at the recovered mark, not the displayed liquidation threshold.
 
-5min history has a separate 30-minute TTL; daily history has a 6-hour TTL. All windows reuse these
+Intraday history has a separate selectable 5/15/30/60-minute TTL (default 5); daily history has a 6-hour TTL. All windows reuse these
 two cached datasets. Quotes take priority. Every dispatched batch reserves one credit PER SYMBOL before
 network I/O, including failed attempts and retries. Quote/time_series/logo each cost 1 credit per symbol.
 Default hard application budgets: 8/minute, 750/UTC day (below Basic 800/day).
@@ -163,10 +185,13 @@ HTTP 429 sets a shared Retry-After-aware exponential cooldown (60s to 15min base
 Retry-After is honored). Retries happen on a later API check, never an unbudgeted immediate loop.
 Access denial is cached for 10 minutes. Network/invalid quote retries wait at least 120 seconds.
 Calls abort after 8 seconds each. All provider messages are replaced with sanitized statuses.
-The local budget and cache journal survives restarts in .cache/pair-twelve-data-v1.json.
-Do not delete/reset it during the quota day. Journal write/read failure fails closed.
-One Node process on durable local disk ONLY. No multi-worker PM2, serverless replicas or multi-instance
-deployment: a distributed shared cache, lock and quota counter are required first.
+On Vercel the shared budget and cache journal live in Upstash Redis. A token-checked Lua
+lease serializes refreshes across functions and a durable quota commit precedes each
+upstream call. Other instances serve committed data. Expired owners cannot overwrite
+newer state. Redis failure pauses requests and trading until shared state is available.
+Local development without Redis retains .cache/pair-twelve-data-v1.json for one Node process.
+Never delete/reset either journal during the quota day. Local and production deployments
+must not use the same provider key with separate quota journals.
 
 ## Official references and display rights
 

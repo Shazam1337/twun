@@ -4,6 +4,7 @@ const url=process.env.ODADO_URL||'http://127.0.0.1:3000',key='odado-perps-v4';
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,a+' != '+b);
 (async()=>{
  const browser=await chromium.launch({channel:'chrome',headless:true}),context=await browser.newContext({viewport:{width:1440,height:900},locale:'en-US'}),page=await context.newPage(),errors=[],posts=[];
+ await context.addInitScript(()=>localStorage.setItem('twun-welcome-v1','seen'));
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
  const state=()=>page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);
  try{

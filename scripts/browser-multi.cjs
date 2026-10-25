@@ -6,6 +6,7 @@ const url=process.env.ODADO_URL||'http://127.0.0.1:3000',key='odado-perps-v4',at
 const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,a+' != '+b);
 (async()=>{
  const browser=await chromium.launch({channel:'chrome',headless:true}),context=await browser.newContext({viewport:{width:1440,height:900},deviceScaleFactor:1,locale:'en-US',reducedMotion:'reduce'}),page=await context.newPage(),errors=[],posts=[];
+ await context.addInitScript(()=>localStorage.setItem('twun-welcome-v1','seen'));
  page.on('pageerror',e=>errors.push(e.message));page.on('request',r=>{if(r.method()==='POST')posts.push(r.url());});
  const state=()=>page.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);
  const capture=async name=>{await fs.mkdir('artifacts',{recursive:true});await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:path.resolve('artifacts/'+name+'.png'),animations:'disabled'});};

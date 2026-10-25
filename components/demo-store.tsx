@@ -5,7 +5,7 @@ import {ARCHIVE_KEY,isLiveAccount,LIVE_KEY} from "@/lib/live-account";
 import {actOnPair,adoptPair,isMultiAccount,migrateAccount,MULTI_KEY,MultiAccount} from "@/lib/multi-account";
 import {DEFAULT_PAIR,Pair,pairId} from "@/lib/catalog";
 import {useMarket} from "./market-store";
-type Store={state:MultiAccount;hydrated:boolean;storageWarning:string;legacyPresent:boolean;open:(side:Side,margin:number,leverage:number)=>Result;close:(id:string)=>Result;advance:()=>Result;reset:()=>void};
+type Store={state:MultiAccount;hydrated:boolean;storageWarning:string;legacyPresent:boolean;open:(side:Side,margin:number,leverage:number)=>Result;close:(id:string,fraction?:number)=>Result;advance:()=>Result;reset:()=>void};
 const DemoContext=createContext<Store|null>(null);
 export function DemoProvider({children}:{children:React.ReactNode}){
  const [state,setState]=useState(()=>migrateAccount()),current=useRef(state);
@@ -42,7 +42,7 @@ export function DemoProvider({children}:{children:React.ReactNode}){
   const r=actOnPair(adopted.state as MultiAccount,p,feed,now(),action);commit(r.ok?r.state:adopted.state);return r;
  };
  const open=(side:Side,margin:number,leverage:number)=>run(pair,{kind:"open",side,margin,leverage});
- const close=(id:string):Result=>{const p=latest().positions.find(p=>p.id===id);return p?run(p.pair??DEFAULT_PAIR,{kind:"close",id}):{ok:false,error:"This position is already closed."};};
+ const close=(id:string,fraction=1):Result=>{const p=latest().positions.find(p=>p.id===id);return p?run(p.pair??DEFAULT_PAIR,{kind:"close",id,fraction}):{ok:false,error:"This position is already closed."};};
  return <DemoContext.Provider value={{state,hydrated,storageWarning,legacyPresent,open,close,advance:()=>run(pair,{kind:"funding"}),reset:()=>commit(migrateAccount())}}>{children}</DemoContext.Provider>;
 }
 export function useDemo(){const value=useContext(DemoContext);if(!value)throw Error("DemoProvider required");return value;}

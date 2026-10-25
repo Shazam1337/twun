@@ -4,6 +4,7 @@ const assert=require('node:assert/strict');
  const b=await chromium.launch({channel:'chrome',headless:true});
  try{
  const page=await b.newPage({viewport:{width:1440,height:900}});
+ await page.addInitScript(()=>localStorage.setItem('twun-welcome-v1','seen'));
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{
   window.walletCalls=[];window.rejectWallet=true;window.fakeChain='0x1';window.knownChain=false;

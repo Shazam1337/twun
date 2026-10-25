@@ -32,7 +32,7 @@ export function adoptPair(s:MultiAccount,pair:Pair,feed:MarketFeed|null,now:numb
  if(r.ok&&r.state===part)return {...r,state:s};
  return merge(s,pair,r);
 }
-export function actOnPair(s:MultiAccount,pair:Pair,feed:MarketFeed|null,now:number,action:{kind:"open";side:Side;margin:number;leverage:number}|{kind:"close";id:string}|{kind:"funding"}):Result {
+export function actOnPair(s:MultiAccount,pair:Pair,feed:MarketFeed|null,now:number,action:{kind:"open";side:Side;margin:number;leverage:number}|{kind:"close";id:string;fraction?:number}|{kind:"funding"}):Result {
  if(action.kind==="funding"&&feed?.session.state!=="open")return {ok:false,error:"Model funding is paused outside the regular session. No overnight accrual or catch-up."};
  const adopted=adoptPair(s,pair,feed,now);if(!adopted.ok)return adopted;
  const accepted=adopted.state as MultiAccount,part=slice(accepted,pair);
@@ -40,6 +40,6 @@ export function actOnPair(s:MultiAccount,pair:Pair,feed:MarketFeed|null,now:numb
  if(action.kind==="open"){
   result=openPosition(part,action.side,action.margin,action.leverage);
   if(result.ok){const last=result.state.positions.at(-1)!;result={...result,state:{...result.state,positions:result.state.positions.map(p=>p.id===last.id?{...p,dataSource:part.acceptedIndex!.source,entryIndexTime:part.acceptedIndex!.timestamp,entryIndexId:part.acceptedIndex!.id}:p)}};}
- }else result=action.kind==="close"?closePosition(part,action.id):advanceFunding(part);
+ }else result=action.kind==="close"?closePosition(part,action.id,action.fraction):advanceFunding(part);
  return merge(accepted,pair,result);
 }

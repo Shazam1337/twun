@@ -4,9 +4,10 @@ const fs=require('node:fs/promises');
 (async()=>{
  const b=await chromium.launch({channel:'chrome',headless:true});
  const p=await b.newPage({viewport:{width:1440,height:1000},reducedMotion:'reduce'}),errors=[];
+ await p.addInitScript(()=>localStorage.setItem('twun-welcome-v1','seen'));
  p.on('pageerror',e=>errors.push(e.message));
  await fs.mkdir('artifacts',{recursive:true});
- for(const [route,name] of [['/','home'],['/trade','trade'],['/portfolio','portfolio']]){
+ for(const [route,name] of [['/','home'],['/trade','trade'],['/portfolio','portfolio'],['/news','news']]){
   await p.goto('http://127.0.0.1:3000'+route,{waitUntil:'networkidle'});
   await p.evaluate(()=>document.fonts.ready);
   assert.match(await p.title(),/TWUN/);
@@ -21,11 +22,11 @@ const fs=require('node:fs/promises');
  await p.screenshot({path:'artifacts/twun-selector-1440.png',animations:'disabled'});
  await p.getByRole('button',{name:'Close market selector',exact:true}).click();
  await p.setViewportSize({width:390,height:844});
- for(const route of ['/','/trade','/portfolio']){
+ for(const route of ['/','/trade','/portfolio','/news']){
   await p.goto('http://127.0.0.1:3000'+route,{waitUntil:'networkidle'});
   assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth),390,'Mobile overflow on '+route);
  }
  assert.deepEqual(errors,[]);
- console.log('PASS: TWUN brand, all 3 pages, selector, 1440px desktop and 390px mobile; no browser errors.');
+ console.log('PASS: TWUN brand, all 4 pages, selector, 1440px desktop and 390px mobile; no browser errors.');
  await b.close();
 })().catch(e=>{console.error(e);process.exitCode=1;});

@@ -34,7 +34,7 @@ export function normalizeHistory(raw: unknown, interval: Interval, now: number, 
     if (value === null) unmatched++;
     else if (!Number.isFinite(value) || value <= 0) throw new FeedError("partial");
     const label = new Date(timestamp).toLocaleString("en-US", interval === "1day" ? { timeZone: "America/New_York", month: "short", day: "numeric" } : { timeZone: "UTC", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false });
-    return { timestamp, value, label };
+    return { timestamp, value, label,...(value!==null?{baseClose:x!,quoteClose:y!}:{}) };
   });
   if (points.filter(p => p.value !== null).length < 2) throw new FeedError("partial");
   return { interval, points, fetchedAt: now, status: "ready", unmatched };
@@ -48,9 +48,9 @@ export function normalizeStockQuote(raw: unknown, symbol: string, now: number) {
     return { symbol, currency: "USD" as const, price: positive(q.close), timestamp, marketOpen: q.is_market_open };
 }
 
-export function normalizeStockHistory(raw: unknown, symbol: string, interval: Interval, now: number) {
+export function normalizeStockHistory(raw: unknown, symbol: string, interval: Interval, now: number,allowEmpty=false) {
     const series = providerError(raw); const meta = object(series.meta);
-    if (meta.symbol !== symbol || meta.currency !== "USD" || meta.interval !== interval || meta.exchange !== stock(symbol)?.exchange || meta.exchange_timezone !== "America/New_York" || !Array.isArray(series.values) || !series.values.length) throw new FeedError("partial");
+    if (meta.symbol !== symbol || meta.currency !== "USD" || meta.interval !== interval || meta.exchange !== stock(symbol)?.exchange || meta.exchange_timezone !== "America/New_York" || !Array.isArray(series.values) || (!allowEmpty&&!series.values.length)) throw new FeedError("partial");
     const map = new Map<number, number>();
     for (const value of series.values) {
       const point = object(value); const datetime = String(point.datetime);
@@ -64,8 +64,9 @@ export function normalizeStockHistory(raw: unknown, symbol: string, interval: In
       } else {
         if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(datetime)) throw new FeedError("partial");
         timestamp = Date.parse(datetime.replace(" ", "T") + "Z"); // requested timezone=UTC
-        if (!Number.isFinite(timestamp) || new Date(timestamp).toISOString().slice(0, 19).replace("T", " ") !== datetime || timestamp % 300_000 !== 0 || timestamp > now) throw new FeedError("partial");
-        if (timestamp + 300_000 > now) continue; // no unfinished bar
+        const step=interval==="1min"?60_000:300_000;
+        if (!Number.isFinite(timestamp) || new Date(timestamp).toISOString().slice(0, 19).replace("T", " ") !== datetime || timestamp % step !== 0 || timestamp > now) throw new FeedError("partial");
+        if (timestamp + step > now) continue; // no unfinished bar
       }
       if (!Number.isFinite(timestamp) || timestamp < Date.UTC(2000, 0, 1) || map.has(timestamp)) throw new FeedError("partial");
       map.set(timestamp, positive(point.close));

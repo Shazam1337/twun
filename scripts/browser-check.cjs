@@ -18,6 +18,7 @@ const LIVE = 'pair-perps-twelve-v3';
   try {
     // First context: ACTUAL application endpoint. Screenshots never use fixture prices.
     const real = await browser.newContext(options);
+    await real.addInitScript(()=>localStorage.setItem('twun-welcome-v1','seen'));
     page = await real.newPage(); watch(page);
     const actual = await (await page.request.get(baseURL + '/api/market')).json();
     console.log('Actual API status:', actual.status, 'snapshot available:', Boolean(actual.snapshot));
@@ -92,6 +93,7 @@ const LIVE = 'pair-perps-twelve-v3';
 
     // Isolated TEST-ONLY route fixtures exercise recovery and accounting without provider access.
     const context = await browser.newContext(options);
+    await context.addInitScript(()=>localStorage.setItem('twun-welcome-v1','seen'));
     const legacy = JSON.stringify({ version: 2, freeUsdc: 42, mark: .5, positions: [{ id: 'archived-position' }], history: [{ id: 'archived-trade' }] });
     await context.addInitScript(value => { if (!localStorage.getItem('pair-perps-demo-v2')) localStorage.setItem('pair-perps-demo-v2', value); }, legacy);
     let timestamp = Date.UTC(2026, 8, 24, 16), ratio = .5, status = 'ready', open = true;

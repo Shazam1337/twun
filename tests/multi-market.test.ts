@@ -31,6 +31,12 @@ test("independent simultaneous positions, selected-pair funding, close and seria
  s=state(actOnPair(s,DEFAULT_PAIR,feed(DEFAULT_PAIR,110),at,{kind:"close",id:nv.id}));assert.equal(s.positions.length,1);near(s.freeUsdc,9949.25);
  assert.ok(s.history.every(e=>e.pair));assert.ok(isMultiAccount(s));
 });
+test("partial close persists v4 parameters and never mutates another pair",()=>{
+ let s=open(open(migrateAccount(initialLiveAccount(at))),apple,200);const other=structuredClone(s.positions.find(p=>p.pair?.base==="AAPL"));const p=s.positions.find(p=>p.pair?.base==="NVDA")!;
+ s=state(actOnPair(s,DEFAULT_PAIR,feed(DEFAULT_PAIR,110),at,{kind:"close",id:p.id,fraction:.25}));
+ const left=s.positions.find(q=>q.id===p.id)!;near(left.margin,75);near(left.notional,375);near(left.entryRatio,.5);assert.deepEqual(s.positions.find(p=>p.pair?.base==="AAPL"),other);assert.ok(isMultiAccount(JSON.parse(JSON.stringify(s))));
+});
+
 test("reversing selection cannot update or liquidate another orientation; pair gate rejects wrong index",()=>{
  let s=open(migrateAccount(initialLiveAccount(at)));const original=structuredClone(s.positions[0]);
  const reverse={base:"TSLA",quote:"NVDA"};const q=quotes();
@@ -80,6 +86,17 @@ test("shared-symbol cache, parallel deduplication, on-demand history and minute/
  const reverse=await p.get({base:"TSLA",quote:"NVDA"},[],"1day");assert.equal(disk.used,6);assert.ok(reverse.market.histories["1day"]);
  now+=120000;await p.get(DEFAULT_PAIR,["NVDA","AAPL"],"1day");assert.equal(disk.used,9);assert.equal(calls.filter(c=>c.pathname==="/time_series").length,3);
 });
+test("chart history refresh cadence honors 5m minimum, slower choices and shared symbol reuse",async()=>{
+ let now=at;const calls:URL[]=[],disk=emptyProviderDisk();
+ const fetcher:typeof fetch=async(input,init)=>{const u=new URL(String(input));if(u.pathname!=="/time_series")return fakeProvider(()=>now,calls)(input,init);calls.push(u);const symbol=u.searchParams.get("symbol")!;return Response.json({meta:{symbol,exchange:stock(symbol)!.exchange,currency:"USD",interval:"5min",exchange_timezone:"America/New_York"},values:[{datetime:"2026-09-25 15:45:00",close:"100"},{datetime:"2026-09-25 15:50:00",close:"110"}]});};
+ const p=new UniverseProvider({key:"test-only",disk,now:()=>now,fetcher});
+ await p.get(DEFAULT_PAIR,[],"5min",900);const count=()=>calls.filter(c=>c.pathname==="/time_series").length;assert.equal(count(),2);
+ now+=299000;await p.get(DEFAULT_PAIR,[],"5min",300);assert.equal(count(),2);
+ now+=2000;await p.get(DEFAULT_PAIR,[],"5min",300);assert.equal(count(),4);
+ now+=301000;await p.get(DEFAULT_PAIR,[],"5min",900);assert.equal(count(),4);
+ await p.get({base:"TSLA",quote:"NVDA"},[],"5min",300);assert.equal(count(),6);
+});
+
 test("shared 429 cooldown, day budget, no key and quote recovery",async()=>{
  let now=at,fail=429;const calls:URL[]=[],disk=emptyProviderDisk();const options={key:"test-only",disk,now:()=>now,fetcher:fakeProvider(()=>now,calls,()=>fail)};
  const p=new UniverseProvider(options);let result=await p.get(DEFAULT_PAIR,[],"1day");assert.equal(result.market.status,"quota_exhausted");assert.equal(calls.length,1);assert.equal(disk.used,2);

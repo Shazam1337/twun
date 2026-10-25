@@ -5,6 +5,7 @@ export type QuoteCache = { value?: Quote; status: FeedStatus; checkedAt: number;
 export type StockHistory = { values: [number, number][]; status: FeedStatus; checkedAt: number; nextAt: number };
 export type UniverseCache = { quotes: Record<string, QuoteCache>; histories: Record<string, StockHistory>; catalog: CatalogStatus; logosChecked: Record<string, number> };
 export type Bundle = { market: MarketFeed; quotes: UniverseCache["quotes"]; catalog: CatalogStatus; budget: { used: number; limit: number; minuteUsed: number; minuteLimit: number; retryAt: number; day: string }; serverTime: number };
+export type HistoryPage={pair:Pair;before:number;history:History|null;status:FeedStatus;hasMore:boolean;retryAt:number};
 export function pairFeed(pair: Pair, quotes: UniverseCache["quotes"], now: number, configured = true): MarketFeed {
   const session = marketSession(now), a = quotes[pair.base], b = quotes[pair.quote];
   let status: FeedStatus = !configured ? "not_configured" : !a || !b ? "unavailable" : a.status !== "ready" ? a.status : b.status;
@@ -23,7 +24,7 @@ export function joinHistory(a: StockHistory | undefined, b: StockHistory | undef
     const x=av.get(timestamp), y=bv.get(timestamp), ratio=x && y ? x/y : NaN;
     const value=Number.isFinite(ratio)&&ratio>0?ratio:null;
     if (value === null) unmatched++;
-    return {timestamp,value,label:new Date(timestamp).toLocaleString("en-US",{timeZone:interval==="1day"?"America/New_York":"UTC",month:"short",day:"numeric"})};
+    return {timestamp,value,...(value!==null?{baseClose:x!,quoteClose:y!}:{}),label:new Date(timestamp).toLocaleString("en-US",{timeZone:interval==="1day"?"America/New_York":"UTC",month:"short",day:"numeric"})};
   });
   const status=a.status!=="ready"?a.status:b.status;
   return { interval, points, unmatched, fetchedAt:Math.min(a.checkedAt,b.checkedAt), status:status==="ready"&&points.filter(p=>p.value!==null).length<2?"partial":status };

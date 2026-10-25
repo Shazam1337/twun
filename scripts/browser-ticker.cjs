@@ -4,6 +4,7 @@ const assert=require('node:assert/strict');
  const browser=await chromium.launch({channel:'chrome',headless:true});
  try{
  const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
+ await page.addInitScript(()=>localStorage.setItem('twun-welcome-v1','seen'));
  page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:3000/',{waitUntil:'networkidle'});
  const tape=page.getByRole('complementary',{name:'Stock quotes and 24-hour changes'});
@@ -38,6 +39,10 @@ const assert=require('node:assert/strict');
   assert.match(await page.getByRole('button',{name:'Choose market',exact:true}).innerText(),new RegExp(symbol+'\\s*/\\s*'+quote));
  }
  await page.goto('http://127.0.0.1:3000/',{waitUntil:'networkidle'});
+ await page.route('**/api/ticker',r=>r.fulfill({json:{configured:true,session:'open',serverTime:Date.now(),items:[{symbol:'INTC',name:'Intel',price:100,timestamp:Date.UTC(2026,8,25,19,59),change24h:99,referenceTime:null,status:'cached'}],refresh:{state:'budget_limited',used:180,limit:180,nextAt:0}}}));
+ await page.reload({waitUntil:'networkidle'});
+ const stale=tape.locator('.twun-stock-group').first().getByRole('button',{name:'Trade INTC/TSLA',exact:true});await stale.waitFor();assert.match(await stale.innerText(),/Stale quote/);assert.match(await stale.locator('.twun-stock-change').innerText(),/—/);assert.doesNotMatch(await stale.innerText(),/99\.00%/);assert.match(await tape.locator('.twun-stock-footnote').innerText(),/budget limited/);
+ await page.unroute('**/api/ticker');
  await page.route('**/api/ticker',r=>r.fulfill({json:{configured:false,items:[],serverTime:Date.now(),session:'open'}}));
  await page.reload({waitUntil:'networkidle'});
  assert.ok(await tape.getByText('Market data not configured',{exact:true}).isVisible());

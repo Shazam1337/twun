@@ -23,4 +23,4 @@ export const validPair = (p: unknown): p is Pair => !!p && typeof p === "object"
 export function parsePair(id: string): Pair | null { const [base, quote, extra] = id.split("/"); const p = {base,quote}; return !extra && validPair(p) ? p : null; }
 export const PRESETS: Pair[] = ["NVDA/TSLA","AAPL/MSFT","AMD/NVDA","GOOGL/META","AMZN/WMT","JPM/BAC","V/MA","XOM/CVX","KO/PEP","LLY/JNJ","CAT/GE","HD/COST"].map(id => parsePair(id)!);
 export type Availability = { status: string; checkedAt: number; observations?: number };
-export type CatalogStatus = Record<string, { quote?: Availability; history5min?: Availability; history1day?: Availability; logo?: string; logoStatus?: string }>;
+export type CatalogStatus = Record<string, { quote?: Availability; history1min?: Availability; history5min?: Availability; history1day?: Availability; logo?: string; logoStatus?: string }>;

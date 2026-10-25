@@ -4,14 +4,14 @@ import { marketSession } from "./market-calendar";
 export const SOURCE = "Twelve Data / US equities";
 export const MAX_AGE_MS = 5 * 60_000;
 export const MAX_SKEW_MS = 60_000;
-export type Interval = "5min" | "1day";
+export type Interval = "1min" | "5min" | "1day";
 export type FeedStatus = "ready" | "not_configured" | "access_denied" | "quota_exhausted" | "partial" | "unavailable" | "stale" | "desynchronized";
 export type Quote = { symbol: string; price: number; currency: "USD"; timestamp: number; marketOpen: boolean };
 export type IndexSnapshot = { id: string; base: Quote; quote: Quote; pair: Pair; ratio: number; timestamp: number; fetchedAt: number; source: typeof SOURCE };
-export type HistoryPoint = { timestamp: number; value: number | null; label: string };
+export type HistoryPoint = { timestamp: number; value: number | null; label: string;baseClose?:number;quoteClose?:number };
 export type History = { interval: Interval; points: HistoryPoint[]; fetchedAt: number; status: FeedStatus; unmatched: number };
 export type Session = { state: "open" | "closed" | "unknown"; date: string; closesAt: number; label: string };
-export type MarketFeed = { pair?: Pair; status: FeedStatus; message: string; snapshot: IndexSnapshot | null; session: Session; histories: Record<Interval, History | null>; serverTime: number; retryAt: number; canTrade: boolean };
+export type MarketFeed = { pair?: Pair; status: FeedStatus; message: string; snapshot: IndexSnapshot | null; session: Session; histories: Record<"5min" | "1day", History | null> & {"1min"?:History|null}; serverTime: number; retryAt: number; canTrade: boolean };
 export const feedMessages: Record<FeedStatus, string> = {
   ready: "Real market data · Simulated execution", not_configured: "Market data not configured",
   access_denied: "Market data access denied — check the server key and entitlements",
@@ -36,8 +36,8 @@ export function tradeAllowed(feed: MarketFeed | null, now: number) {
   return !!feed && feed.status === "ready" && feed.canTrade && demoIndexAllowed(feed.snapshot,feed.session,now) &&
     Number.isFinite(feed.serverTime) && feed.serverTime <= now+10000 && now-feed.serverTime < MAX_AGE_MS;
 }
-export function historySeries(feed: MarketFeed | null, range: string) {
-  const history = feed?.histories[range === "1D" || range === "7D" ? "5min" : "1day"];
+export function historySeries(feed: MarketFeed | null, range: string,interval?:Interval) {
+  const history = feed?.histories[interval??(range === "1D" || range === "7D" ? "5min" : "1day")];
   const points = history?.points ?? [];
   const end = points.at(-1)?.timestamp ?? 0;
   const days = ({ "1D": 1, "7D": 7, "30D": 30, "90D": 90, "1Y": 365 } as Record<string, number>)[range] ?? 30;
