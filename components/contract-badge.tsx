@@ -6,7 +6,7 @@ import {contractAddress,shortContract} from "@/lib/contract-address";
 // Source: https://cdn.robinhood.com/assets/generated_assets/hoodchain_docsite/feather-dark.svg
 const CHAIN_ICON="/robinhood-chain-feather.svg";
 export function ContractBadge(){
- const address=contractAddress(process.env.NEXT_PUBLIC_TWUN_CONTRACT_ADDRESS);
+ const address=contractAddress(process.env.NEXT_PUBLIC_TWUN_CONTRACT_ADDRESS)??"0xbc03c56e8ed64e364787a54593b2f1a590d31efb";
  const copyText=address??"0x000...000";
  const [notice,setNotice]=useState(""),timer=useRef<ReturnType<typeof setTimeout>|null>(null);
  useEffect(()=>()=>{if(timer.current)clearTimeout(timer.current);},[]);
