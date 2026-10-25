@@ -5,8 +5,8 @@ import {ArrowDownUp,ArrowRight,Check,ChevronDown,Search,Star,X,Plus} from "lucid
 import {canonicalPair,DEFAULT_PAIR,Pair,pairId,parsePair,PRESETS,stock,STOCKS,validPair} from "@/lib/catalog";
 import {useMarket} from "./market-store";
 export function StockLogo({symbol}:{symbol:string}){
- const {catalog}=useMarket(),[failed,setFailed]=useState(false),url=catalog[symbol]?.logo;
- return <span className="odado-company-logo" aria-hidden="true">{url&&!failed?<img src={url} alt="" width={32} height={32} loading="lazy" onError={()=>setFailed(true)}/>:<span>{symbol.slice(0,2)}</span>}</span>;
+ const [failedUrl,setFailedUrl]=useState<string|null>(null),url=stock(symbol)?`/stock-logos/${symbol}.png`:null;
+ return <span className="odado-company-logo" aria-hidden="true">{url&&failedUrl!==url?<img key={url} src={url} alt="" width={32} height={32} loading="lazy" onError={()=>setFailedUrl(url)}/>:<span>{symbol.slice(0,2)}</span>}</span>;
 }
 export function PairLogos({pair}:{pair:Pair}){return <span className="odado-pair-logos"><StockLogo symbol={pair.base}/><StockLogo symbol={pair.quote}/></span>;}
 function PairCreationIntent({onRequest}:{onRequest:(symbol:string)=>void}){
